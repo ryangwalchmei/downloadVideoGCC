@@ -10,37 +10,31 @@ type DownloadFileProps = {
     folderVideoPath: string
 }
 
-const videosDownloadFailed = [""];
+const videosDownloadFailed: string[] = [];
 
 main();
 
-function main() {
-    console.log("Download videos has finished.");
-    downloadAllVideos()
-        .then(e => {
-            console.log("Download videos has finished.");
-        })
+async function main() {
+    await downloadAllVideos();
 }
 
 async function downloadAllVideos() {
     videos.map(tema => {
-        console.log(`Starting theme download ${tema}`);
+        console.log(`Starting theme download "${tema.tema}"`);
 
         const foldersTemas = path.join(tema.tema);
         if (!fs.existsSync(foldersTemas)) fs.mkdirSync(foldersTemas);
 
-        tema.videos.map(video => {
+        tema.videos.map(async video => {
             const foldersVideos = path.join(tema.tema, video.name)
             if (!fs.existsSync(foldersVideos)) { fs.mkdirSync(foldersVideos) }
 
-            downloadFile({ folderVideoPath: foldersVideos, type: '.mp4', video: video })
+            await downloadFile({ folderVideoPath: foldersVideos, type: '.mp4', video: video });
         })
     });
-
-    if (videosDownloadFailed) console.log(videosDownloadFailed);
 };
 
-function downloadFile({
+async function downloadFile({
     folderVideoPath,
     type,
     video
@@ -51,11 +45,18 @@ function downloadFile({
 
     console.log(`Downloading video ${videoName}`);
     const request = https.get(video.url, function (archive) {
-        archive.pipe(file).addListener("close", () => {
-            console.log(`${videoName} has been successfully downloaded.`);
-        }).addListener("error", e => {
+        if (archive.statusCode === 403) {
             console.log(`Error downloading ${videoName}`);
             videosDownloadFailed.push(videoName);
+            console.log({
+                error: { statusCode: 403, message: "Acesso Negado" },
+                videosError: videosDownloadFailed
+            });
+            return;
+        }
+
+        archive.pipe(file).addListener("close", () => {
+            console.log(`${videoName} has been successfully downloaded.`);
         });
     });
 
