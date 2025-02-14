@@ -43,7 +43,7 @@ After that, just run `yarn start` or `npm start` to run it.
 
 ## Author
 
-- [@ryan.gwalchmei](https://www.github.com/ryangalvaogp)
+- [@ryan.gwalchmei](https://www.github.com/ryangwalchmei)
 
 
 ## License
